@@ -1,30 +1,45 @@
-import React from 'react';
-import Profile from './components/Profile.js';
-import user from './user.json';
-import Statistics from './components/Statistics.js';
-import data from './data.json';
-import FriendList from './components/FriendList.js';
-import friends from './friends.json';
-import TransactionHistory from './components/TransactionHistory.js';
-import transactions from './transactions.json';
+import React, { useState } from 'react';
+import ContactForm from './components/ContactForm';
+import ContactList from './components/ContactList';
+import Filter from './components/Filter';
+import { nanoid } from 'nanoid';
 
-function App() {
-  const { username, tag, location, avatar, stats } = user;
+const App = () => {
+  const [contacts, setContacts] = useState([]);
+  const [filter, setFilter] = useState('');
+
+  const addContact = ({ name, number }) => {
+    const newContact = {
+      id: nanoid(),
+      name,
+      number,
+    };
+
+    if (contacts.some((contact) => contact.name.toLowerCase() === name.toLowerCase())) {
+      alert('Contact with this name already exists!');
+      return;
+    }
+
+    setContacts([...contacts, newContact]);
+  };
+
+  const deleteContact = (id) => {
+    setContacts(contacts.filter((contact) => contact.id !== id));
+  };
+
+  const filteredContacts = contacts.filter((contact) =>
+    contact.name.toLowerCase().includes(filter.toLowerCase())
+  );
 
   return (
     <div>
-      <Profile
-        username={username}
-        tag={tag}
-        location={location}
-        avatar={avatar}
-        stats={stats}
-      />
-      <Statistics title="Upload stats" stats={data} />
-      <FriendList friends={friends} />
-      <TransactionHistory items={transactions} />
+      <h1>Phonebook</h1>
+      <ContactForm addContact={addContact} />
+      <h2>Contacts</h2>
+      <Filter value={filter} onChange={setFilter} />
+      <ContactList contacts={filteredContacts} onDeleteContact={deleteContact} />
     </div>
   );
-}
+};
 
 export default App;
