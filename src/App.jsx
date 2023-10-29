@@ -1,43 +1,69 @@
-import React, { useState } from 'react';
-import ContactForm from './components/ContactForm';
-import ContactList from './components/ContactList';
-import Filter from './components/Filter';
-import { nanoid } from 'nanoid';
+import React, { useState, useEffect } from 'react';
+import Searchbar from './components/Searchbar';
+import ImageGallery from './components/ImageGallery';
+import Button from './components/Button';
+import Loader from './components/Loader';
+import Modal from './components/Modal';
+import styles from './index.module.css';
+
+const apiKey = '40356366-0a358e87ebc4b14f5117f04b2';
+const baseUrl = 'https://pixabay.com/api/';
 
 const App = () => {
-  const [contacts, setContacts] = useState([]);
-  const [filter, setFilter] = useState('');
+  const [query, setQuery] = useState('');
+  const [images, setImages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [largeImageURL, setLargeImageURL] = useState('');
+  const [showModal, setShowModal] = useState(false);
 
-  const addContact = ({ name, number }) => {
-    const newContact = {
-      id: nanoid(),
-      name,
-      number,
+  useEffect(() => {
+    const fetchImages = () => {
+      setLoading(true);
+      fetch(
+        `${baseUrl}?q=${query}&page=${page}&key=${apiKey}&image_type=photo&orientation=horizontal&per_page=12`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          setImages((prevImages) => [...prevImages, ...data.hits]);
+          setPage((prevPage) => prevPage + 1);
+        })
+        .catch((error) => console.error(error))
+        .finally(() => setLoading(false));
     };
 
-    if (contacts.some((contact) => contact.name.toLowerCase() === name.toLowerCase())) {
-      alert('Contact with this name already exists!');
-      return;
+    if (query !== '') {
+      fetchImages();
     }
+  }, [query, page]); // Incluyendo 'page' en el array de dependencias
 
-    setContacts([...contacts, newContact]);
+  const handleSearch = (searchQuery) => {
+    setQuery(searchQuery);
+    setImages([]);
+    setPage(1);
   };
 
-  const deleteContact = (id) => {
-    setContacts(contacts.filter((contact) => contact.id !== id));
+  const handleLoadMore = () => {
+    // El estado de 'page' se actualiza automáticamente debido al efecto
   };
 
-  const filteredContacts = contacts.filter((contact) =>
-    contact.name.toLowerCase().includes(filter.toLowerCase())
-  );
+  const handleImageClick = (largeImageURL) => {
+    setLargeImageURL(largeImageURL);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setLargeImageURL('');
+  };
 
   return (
-    <div>
-      <h1>Phonebook</h1>
-      <ContactForm addContact={addContact} />
-      <h2>Contacts</h2>
-      <Filter value={filter} onChange={setFilter} />
-      <ContactList contacts={filteredContacts} onDeleteContact={deleteContact} />
+    <div className={styles.app}>
+      <Searchbar onSubmit={handleSearch} />
+      {images.length > 0 && <ImageGallery images={images} onImageClick={handleImageClick} />}
+      {loading && <Loader />}
+      {images.length > 0 && !loading && <Button onClick={handleLoadMore} />}
+      {showModal && <Modal largeImageURL={largeImageURL} onClose={handleCloseModal} />}
     </div>
   );
 };
