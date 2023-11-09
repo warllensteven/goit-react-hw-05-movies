@@ -26,16 +26,14 @@ const App = () => {
         .then((response) => response.json())
         .then((data) => {
           setImages((prevImages) => [...prevImages, ...data.hits]);
-          setPage((prevPage) => prevPage + 1);
         })
         .catch((error) => console.error(error))
         .finally(() => setLoading(false));
     };
 
-    if (query !== '') {
-      fetchImages();
-    }
-  }, [query, page]); // Incluyendo 'page' en el array de dependencias
+    fetchImages();
+
+  }, [query, page]);
 
   const handleSearch = (searchQuery) => {
     setQuery(searchQuery);
@@ -44,7 +42,7 @@ const App = () => {
   };
 
   const handleLoadMore = () => {
-    // El estado de 'page' se actualiza automáticamente debido al efecto
+    setPage((prevPage) => prevPage + 1);
   };
 
   const handleImageClick = (largeImageURL) => {
