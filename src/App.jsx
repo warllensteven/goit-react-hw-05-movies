@@ -8,7 +8,7 @@ import Reviews from './components/Reviews/Reviews';
 
 const App = () => {
   return (
-    <Router basename="/goit-react-hw-04-image-finder">
+    <Router basename="/goit-react-hw-05-movies">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/movies" element={<Movies/>} />
